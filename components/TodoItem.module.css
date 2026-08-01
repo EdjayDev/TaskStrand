@@ -1,0 +1,117 @@
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 4px;
+}
+
+.node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.pin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+  background: var(--color-canvas-alt);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pin:hover {
+  border-color: var(--color-thread);
+}
+
+.pin:focus-visible {
+  outline: 2px solid var(--color-thread);
+  outline-offset: 3px;
+}
+
+.strand {
+  width: 2px;
+  flex: 1;
+  min-height: 22px;
+  margin-top: 4px;
+  background: var(--color-border-strong);
+  transition: background 0.3s ease;
+}
+
+.done .pin {
+  background: var(--color-thread-done);
+  border-color: var(--color-thread-done);
+  box-shadow: 0 0 0 4px var(--color-thread-done-glow);
+}
+
+.done .strand {
+  background: var(--color-thread-done);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  word-break: break-word;
+  cursor: text;
+  color: var(--color-text);
+}
+
+.done .text {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+}
+
+.editInput {
+  width: 100%;
+  background: var(--color-canvas-alt);
+  border: 1px solid var(--color-thread);
+  color: var(--color-text);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.item:hover .actions,
+.item:focus-within .actions {
+  opacity: 1;
+}
+
+.iconButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: background 0.2s ease;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--color-thread);
+  outline-offset: 2px;
+}

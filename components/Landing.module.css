@@ -14,11 +14,7 @@
   transform: translate(-50%, -50%);
   width: 340px;
   height: 340px;
-  background: radial-gradient(
-    circle,
-    var(--color-thread-glow) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle, var(--color-thread-glow) 0%, transparent 70%);
   filter: blur(10px);
   z-index: 0;
 }
@@ -101,9 +97,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .cta:hover {
