@@ -229,23 +229,35 @@
   opacity: 1;
 }
 
+/* Icon buttons: uniform SVG sizing + color instead of relying on emoji.
+   Color transitions on hover so both icons stay visually consistent. */
 .iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 5px;
   border-radius: 6px;
-  font-size: 0.85rem;
-  transition: background 0.2s ease;
+  color: var(--color-text-faint);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .iconButton:hover {
   background: rgba(255, 255, 255, 0.06);
+  color: var(--color-thread);
 }
 
 .iconButton:focus-visible {
   outline: 2px solid var(--color-thread);
   outline-offset: 2px;
+}
+
+.deleteButton:hover {
+  color: var(--color-thread-done);
 }
 
 /* Hovering the scissors frays the strand before you commit to the cut */

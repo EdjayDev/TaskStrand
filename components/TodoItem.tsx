@@ -12,6 +12,40 @@ interface TodoItemProps {
   onEdit: (id: string, text: string) => void;
 }
 
+// Shared stroke settings keep the two icons visually uniform (same weight,
+// caps, and viewBox) rather than relying on inconsistent emoji glyphs.
+const ICON_PROPS = {
+  width: 16,
+  height: 16,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.75,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+function EditIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+// Scissors, styled to match EditIcon's weight — doubles as "cut the thread"
+function CutIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <circle cx="6" cy="6" r="2.5" />
+      <circle cx="6" cy="18" r="2.5" />
+      <line x1="8.5" y1="7.5" x2="20" y2="19" />
+      <line x1="8.5" y1="16.5" x2="20" y2="5" />
+    </svg>
+  );
+}
+
 export function TodoItem({
   todo,
   isLast,
@@ -90,7 +124,7 @@ export function TodoItem({
             onClick={() => setIsEditing(true)}
             aria-label="Edit task"
           >
-            ✏️
+            <EditIcon />
           </button>
         )}
         {/* deleteButton class is targeted by a :has() selector in the CSS
@@ -101,7 +135,7 @@ export function TodoItem({
           onClick={() => onDelete(todo.id)}
           aria-label="Delete task"
         >
-          ✂️
+          <CutIcon />
         </button>
       </div>
     </li>
