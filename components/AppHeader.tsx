@@ -1,5 +1,3 @@
-import styles from "./AppHeader.module.css";
-
 interface AppHeaderProps {
   total: number;
   remaining: number;
@@ -8,32 +6,44 @@ interface AppHeaderProps {
   onToggleAll: () => void;
 }
 
-export function AppHeader({ total, remaining, completed, allDone, onToggleAll }: AppHeaderProps) {
+export function AppHeader({
+  total,
+  remaining,
+  completed,
+  allDone,
+  onToggleAll,
+}: AppHeaderProps) {
   return (
-    <header className={styles.header}>
+    <header className="flex items-start justify-between gap-3 mb-7">
       <div>
-        <h1 className={styles.title}>TaskStrand</h1>
-        <p className={styles.stats}>
+        <h1 className="font-display text-3xl font-bold tracking-[-0.025em] text-text m-0 mb-1">
+          TaskStrand
+        </h1>
+        <p className="font-mono text-xs text-text-muted m-0">
           <span>
-            <strong>{total}</strong> total
+            <strong className="text-text font-medium">{total}</strong> total
           </span>
-          <span className={styles.dot} aria-hidden="true">
+          <span className="mx-2 text-border-strong" aria-hidden="true">
             ·
           </span>
           <span>
-            <strong>{remaining}</strong> pending
+            <strong className="text-text font-medium">{remaining}</strong>{" "}
+            pending
           </span>
-          <span className={styles.dot} aria-hidden="true">
+          <span className="mx-2 text-border-strong" aria-hidden="true">
             ·
           </span>
           <span>
-            <strong>{completed}</strong> done
+            <strong className="text-text font-medium">{completed}</strong> done
           </span>
         </p>
       </div>
 
       {total > 0 && (
-        <button className={styles.toggleAll} onClick={onToggleAll}>
+        <button
+          className="rounded-[12px] border border-border px-3 py-2 text-xs font-medium text-text-muted transition duration-200 hover:border-text-muted hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
+          onClick={onToggleAll}
+        >
           {allDone ? "Unpin all" : "Pin all done"}
         </button>
       )}

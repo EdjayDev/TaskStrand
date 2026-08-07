@@ -1,7 +1,6 @@
 import type { Filter, Todo } from "../types";
 import { TodoItem } from "./TodoItem";
 import { EmptyState } from "./EmptyState";
-import styles from "./TodoThread.module.css";
 
 interface TodoThreadProps {
   todos: Todo[];
@@ -11,13 +10,19 @@ interface TodoThreadProps {
   onEdit: (id: string, text: string) => void;
 }
 
-export function TodoThread({ todos, filter, onToggle, onDelete, onEdit }: TodoThreadProps) {
+export function TodoThread({
+  todos,
+  filter,
+  onToggle,
+  onDelete,
+  onEdit,
+}: TodoThreadProps) {
   if (todos.length === 0) {
     return <EmptyState filter={filter} />;
   }
 
   return (
-    <ul className={styles.thread}>
+    <ul className="flex flex-col list-none m-0 p-0">
       {todos.map((todo, index) => (
         <TodoItem
           key={todo.id}

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Todo } from "../types";
-import styles from "./TodoItem.module.css";
 
 interface TodoItemProps {
   todo: Todo;
@@ -73,30 +72,33 @@ export function TodoItem({
   };
 
   return (
-    <li className={`${styles.item} ${todo.completed ? styles.done : ""}`}>
-      {/* Pin + connector column. Purely visual, hence aria-hidden — the
-          checkbox semantics live on the pin button itself. */}
-      <div className={styles.node} aria-hidden="true">
+    <li
+      className={`task-item flex items-start gap-3 py-3 ${todo.completed ? "done" : ""}`}
+    >
+      <div
+        className="node relative flex flex-col items-center w-5 shrink-0 pt-0.5"
+        aria-hidden="true"
+      >
         <button
           type="button"
           role="checkbox"
           aria-checked={todo.completed}
           aria-label={todo.completed ? "Mark task active" : "Mark task done"}
-          className={styles.pin}
+          className="pin relative flex-shrink-0 rounded-full border-2 border-border-strong shadow-sm transition duration-200 hover:border-thread hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
           onClick={() => onToggle(todo.id)}
         />
         {isLast ? (
-          <span className={styles.tail} />
+          <span className="tail-line" />
         ) : (
-          <span className={styles.strand} />
+          <span className="strand-line animate-[twine-drift_7s_linear_infinite]" />
         )}
       </div>
 
-      <div className={styles.content}>
+      <div className="task-content flex-1 min-w-0 px-3 py-1.5">
         {isEditing ? (
           <input
             ref={editRef}
-            className={styles.editInput}
+            className="edit-input w-full rounded-[12px] border border-thread bg-canvas-alt px-3 py-2 text-sm text-text outline-none transition focus:shadow-[0_0_0_3px_rgba(69,201,165,0.4)]"
             value={draft}
             maxLength={120}
             onChange={(e) => setDraft(e.target.value)}
@@ -108,7 +110,7 @@ export function TodoItem({
           />
         ) : (
           <span
-            className={styles.text}
+            className={`block cursor-text break-words text-base leading-6 ${todo.completed ? "text-text-faint line-through" : "text-text"}`}
             onDoubleClick={() => setIsEditing(true)}
           >
             {todo.text}
@@ -116,22 +118,20 @@ export function TodoItem({
         )}
       </div>
 
-      <div className={styles.actions}>
+      <div className="task-actions flex gap-1 transition-opacity duration-200">
         {!isEditing && (
           <button
             type="button"
-            className={styles.iconButton}
+            className="icon-button inline-flex items-center justify-center rounded-[6px] p-1.5 text-text-faint transition duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-thread focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
             onClick={() => setIsEditing(true)}
             aria-label="Edit task"
           >
             <EditIcon />
           </button>
         )}
-        {/* deleteButton class is targeted by a :has() selector in the CSS
-            to fray the strand on hover before the cut */}
         <button
           type="button"
-          className={`${styles.iconButton} ${styles.deleteButton}`}
+          className="icon-button inline-flex items-center justify-center rounded-[6px] p-1.5 text-text-faint transition duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-thread-done focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
           onClick={() => onDelete(todo.id)}
           aria-label="Delete task"
         >

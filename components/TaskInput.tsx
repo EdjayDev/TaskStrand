@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import styles from "./TaskInput.module.css";
 
 interface TaskInputProps {
   onAdd: (text: string) => void;
@@ -20,11 +19,11 @@ export function TaskInput({ onAdd, autoFocus }: TaskInputProps) {
   };
 
   return (
-    <div className={styles.toolbar}>
+    <div className="flex gap-2 mb-5">
       <input
         ref={inputRef}
         type="text"
-        className={styles.input}
+        className="flex-1 min-w-0 rounded-[12px] border border-border bg-canvas-alt px-4 py-3 text-base text-text placeholder:text-text-faint outline-none transition focus:border-thread"
         placeholder="What's the next thing to tie down?"
         value={value}
         maxLength={120}
@@ -34,7 +33,11 @@ export function TaskInput({ onAdd, autoFocus }: TaskInputProps) {
           if (e.key === "Enter") submit();
         }}
       />
-      <button className={styles.addButton} onClick={submit} disabled={!value.trim()}>
+      <button
+        className="rounded-[12px] bg-thread px-5 py-3 text-sm font-semibold text-canvas transition duration-200 hover:bg-thread-hover disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
+        onClick={submit}
+        disabled={!value.trim()}
+      >
         Add task
       </button>
     </div>
