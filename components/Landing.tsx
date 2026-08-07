@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  FeatureCard,
+  MockTaskCard,
+  TaskListItem,
+  ThreadConnectorOverlay,
+} from "./LandingHelpers";
 
 interface LandingProps {
   onStart: () => void;
@@ -49,7 +55,7 @@ export function Landing({ onStart }: LandingProps) {
 
       <header className="sticky top-0 z-20 border-b border-border/50 bg-canvas/95 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-6 py-4 text-center">
-          <p className="font-display uppercase tracking-[-0.08em] text-4xl font-extrabold leading-none text-text sm:text-6xl lg:text-7xl">
+          <p className="font-display uppercase tracking-[0.06em] text-5xl font-extrabold leading-none text-text sm:text-7xl lg:text-8xl">
             TASK STRAND
           </p>
         </div>
@@ -149,69 +155,37 @@ export function Landing({ onStart }: LandingProps) {
             </div>
 
             <div className="mt-8 grid gap-4 md:grid-cols-3">
-              <article
-                data-reveal-index={0}
-                ref={setRevealRef(0)}
-                className={`rounded-[24px] border border-border bg-canvas-alt/90 p-5 transition-all duration-700 ease-out ${revealClass(0)}`}
-              >
-                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                  organize
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-text">
-                  Pinned task flow
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-text-muted">
-                  Keep every task pinned inside the same thread so nothing slips
-                  through the cracks.
-                </p>
-              </article>
-
-              <article
-                data-reveal-index={1}
-                ref={setRevealRef(1)}
-                className={`rounded-[24px] border border-border bg-canvas-alt/90 p-5 transition-all duration-700 ease-out ${revealClass(1)}`}
-              >
-                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                  visualize
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-text">
-                  Connected status
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-text-muted">
-                  See which tasks are active, done, or waiting at a glance with
-                  strong thread visuals.
-                </p>
-              </article>
-
-              <article
-                data-reveal-index={2}
-                ref={setRevealRef(2)}
-                className={`rounded-[24px] border border-border bg-canvas-alt/90 p-5 transition-all duration-700 ease-out ${revealClass(2)}`}
-              >
-                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                  prioritize
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-text">
-                  Live card details
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-text-muted">
-                  Each card shows a short flavor note so you know exactly what
-                  action it represents.
-                </p>
-              </article>
+              <FeatureCard
+                index={0}
+                setRevealRef={setRevealRef}
+                revealClass={revealClass(0)}
+                label="organize"
+                title="Pinned task flow"
+                description="Keep every task pinned inside the same thread so nothing slips through the cracks."
+              />
+              <FeatureCard
+                index={1}
+                setRevealRef={setRevealRef}
+                revealClass={revealClass(1)}
+                label="visualize"
+                title="Connected status"
+                description="See which tasks are active, done, or waiting at a glance with strong thread visuals."
+              />
+              <FeatureCard
+                index={2}
+                setRevealRef={setRevealRef}
+                revealClass={revealClass(2)}
+                label="prioritize"
+                title="Live card details"
+                description="Each card shows a short flavor note so you know exactly what action it represents."
+              />
             </div>
           </div>
         </section>
 
         <section className="mt-16 space-y-8">
           <div className="relative grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-            <div className="pointer-events-none absolute inset-y-0 left-[50%] hidden lg:block">
-              <div className="absolute top-24 left-1/2 h-[calc(100%-8rem)] w-px -translate-x-1/2 rounded-full bg-thread/30" />
-              <div className="absolute top-24 left-1/2 h-0.5 w-24 -translate-x-1/2 rounded-full bg-thread/20" />
-              <div className="absolute top-48 left-1/2 h-0.5 w-20 -translate-x-1/2 rounded-full bg-thread/20" />
-              <div className="absolute top-[calc(50%+2rem)] left-1/2 h-0.5 w-28 -translate-x-1/2 rounded-full bg-thread/20" />
-              <div className="absolute top-[calc(100%-4rem)] left-1/2 h-0.5 w-24 -translate-x-1/2 rounded-full bg-thread/20" />
-            </div>
+            <ThreadConnectorOverlay />
 
             <div
               data-reveal-index={3}
@@ -231,43 +205,20 @@ export function Landing({ onStart }: LandingProps) {
               </p>
 
               <div className="mt-8 space-y-4">
-                <div className="rounded-[28px] border border-thread/20 bg-canvas-alt/90 p-6 shadow-card floating-card animate-float">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="pin relative h-12 w-12 rounded-full border border-thread bg-thread/10" />
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                          in progress
-                        </p>
-                        <p className="mt-1 text-lg font-semibold text-text">
-                          Publish the task thread layout
-                        </p>
-                      </div>
-                    </div>
-                    <span className="rounded-full bg-thread/10 px-3 py-1 text-xs font-semibold text-thread">
-                      3 / 5
-                    </span>
-                  </div>
-                </div>
-
-                <div className="rounded-[28px] border border-border bg-canvas-alt/85 p-6 shadow-card floating-card animate-float-reverse delay-1500">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="pin relative h-12 w-12 rounded-full border border-thread-done bg-thread-done/10" />
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                          done
-                        </p>
-                        <p className="mt-1 text-lg font-semibold text-text">
-                          Sync the thread state across cards
-                        </p>
-                      </div>
-                    </div>
-                    <span className="rounded-full bg-thread-done/10 px-3 py-1 text-xs font-semibold text-thread-done">
-                      done
-                    </span>
-                  </div>
-                </div>
+                <MockTaskCard
+                  status="in progress"
+                  title="Publish the task thread layout"
+                  badge="3 / 5"
+                  animationClass="animate-float"
+                />
+                <MockTaskCard
+                  status="done"
+                  title="Sync the thread state across cards"
+                  badge="done"
+                  done
+                  animationClass="animate-float-reverse"
+                  delayClass="delay-1500"
+                />
               </div>
             </div>
 
@@ -280,57 +231,22 @@ export function Landing({ onStart }: LandingProps) {
                 <span className="h-px w-24 rounded-full bg-thread/20" />
               </div>
               <div className="grid gap-4 pt-12">
-                <div className="task-item flex gap-4 rounded-[28px] border border-border bg-canvas-alt/90 p-5 transition hover:bg-white/5">
-                  <div className="pin relative h-11 w-11 rounded-full border border-thread bg-thread/10" />
-                  <div className="flex-1 space-y-2 task-content p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-text">
-                        Design hero motion
-                      </p>
-                      <span className="rounded-full bg-thread/10 px-2 py-1 text-xs font-semibold text-thread">
-                        high
-                      </span>
-                    </div>
-                    <p className="text-sm text-text-faint">
-                      Smooth entrance, subtle float, and connected thread lines.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="task-item flex gap-4 rounded-[28px] border border-border bg-canvas-alt/90 p-5 transition hover:bg-white/5">
-                  <div className="pin relative h-11 w-11 rounded-full border border-thread-done bg-thread-done/10" />
-                  <div className="flex-1 space-y-2 task-content p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-text">
-                        Animate card status
-                      </p>
-                      <span className="rounded-full bg-thread-done/10 px-2 py-1 text-xs font-semibold text-thread-done">
-                        done
-                      </span>
-                    </div>
-                    <p className="text-sm text-text-faint">
-                      Motion gives the task grid a more alive, tactile feel.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="task-item flex gap-4 rounded-[28px] border border-border bg-canvas-alt/90 p-5 transition hover:bg-white/5">
-                  <div className="pin relative h-11 w-11 rounded-full border border-thread bg-thread/10" />
-                  <div className="flex-1 space-y-2 task-content p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-text">
-                        Keep the thread alive
-                      </p>
-                      <span className="rounded-full bg-thread/10 px-2 py-1 text-xs font-semibold text-thread">
-                        next
-                      </span>
-                    </div>
-                    <p className="text-sm text-text-faint">
-                      A small card preview shows how tasks flow from start to
-                      done.
-                    </p>
-                  </div>
-                </div>
+                <TaskListItem
+                  title="Design hero motion"
+                  badge="high"
+                  description="Smooth entrance, subtle float, and connected thread lines."
+                />
+                <TaskListItem
+                  title="Animate card status"
+                  badge="done"
+                  description="Motion gives the task grid a more alive, tactile feel."
+                  done
+                />
+                <TaskListItem
+                  title="Keep the thread alive"
+                  badge="next"
+                  description="A small card preview shows how tasks flow from start to done."
+                />
               </div>
             </div>
           </div>
