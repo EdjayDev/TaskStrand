@@ -125,6 +125,18 @@ button {
   .shadow-card {
     box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.45);
   }
+  .shape-panel {
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+  }
+  .shape-panel-alt {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), 16px 100%, 0 100%);
+  }
+  .shape-slab {
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  }
+  .shape-slab-alt {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), 10px 100%, 0 100%);
+  }
   .focus-ring-thread:focus-visible {
     outline: 2px solid var(--color-thread);
     outline-offset: 2px;

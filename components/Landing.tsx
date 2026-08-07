@@ -84,7 +84,7 @@ export function Landing({ onStart }: LandingProps) {
           </div>
 
           <div
-            className={`relative overflow-hidden rounded-[40px] border border-border bg-card/95 p-8 shadow-card transition-all duration-700 ${
+            className={`relative overflow-hidden shape-panel border border-border bg-card p-8 shadow-card transition-all duration-700 ${
               isReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
           >
@@ -93,7 +93,7 @@ export function Landing({ onStart }: LandingProps) {
             <div className="absolute left-1/2 top-2/3 h-px w-40 -translate-x-1/2 bg-thread/30" />
 
             <div className="grid gap-6">
-              <div className="relative rounded-[28px] border border-dashed border-thread/30 bg-canvas-alt/80 p-6">
+              <div className="relative shape-slab border border-dashed border-thread/30 bg-canvas-alt p-6">
                 <span className="absolute -left-5 top-8 h-0.5 w-10 bg-thread/40" />
                 <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
                   run multiple task
@@ -107,7 +107,7 @@ export function Landing({ onStart }: LandingProps) {
                 </p>
               </div>
 
-              <div className="relative rounded-[28px] border border-dashed border-thread-done/30 bg-canvas-alt/80 p-6">
+              <div className="relative shape-slab border border-dashed border-thread-done/30 bg-canvas-alt p-6">
                 <span className="absolute -right-5 top-10 h-0.5 w-12 bg-thread-done/40" />
                 <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
                   control the thread
@@ -121,7 +121,7 @@ export function Landing({ onStart }: LandingProps) {
                 </p>
               </div>
 
-              <div className="relative rounded-[28px] border border-dashed border-thread/30 bg-canvas-alt/80 p-6">
+              <div className="relative shape-slab border border-dashed border-thread/30 bg-canvas-alt p-6">
                 <span className="absolute left-0 top-[-10px] h-0.5 w-14 bg-thread/40" />
                 <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
                   stay focused
@@ -139,7 +139,7 @@ export function Landing({ onStart }: LandingProps) {
         </section>
 
         <section className="mt-16 space-y-8">
-          <div className="rounded-[32px] border border-border bg-card/90 p-8 shadow-card">
+          <div className="shape-panel-alt border border-border bg-card p-8 shadow-card">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-thread-done">
@@ -190,13 +190,13 @@ export function Landing({ onStart }: LandingProps) {
             <div
               data-reveal-index={3}
               ref={setRevealRef(3)}
-              className={`rounded-[32px] border border-border bg-card/90 p-8 shadow-card transition-all duration-700 ease-out ${revealClass(3)}`}
+              className={`shape-panel-alt border border-border bg-card p-8 shadow-card transition-all duration-700 ease-out ${revealClass(3)}`}
             >
               <p className="text-sm uppercase tracking-[0.3em] text-thread-done">
                 coming alive
               </p>
               <h2 className="mt-4 text-3xl font-semibold text-text">
-                Task mockup with subtle motion.
+                Task flows with motion.
               </h2>
               <p className="mt-4 max-w-xl text-base leading-7 text-text-muted">
                 Preview how task cards float, pulse, and link together inside a
@@ -225,7 +225,7 @@ export function Landing({ onStart }: LandingProps) {
             <div
               data-reveal-index={4}
               ref={setRevealRef(4)}
-              className={`relative overflow-hidden rounded-[40px] border border-border bg-card/95 p-8 shadow-card transition-all duration-700 ease-out ${revealClass(4)}`}
+              className={`relative overflow-hidden shape-panel border border-border bg-card p-8 shadow-card transition-all duration-700 ease-out ${revealClass(4)}`}
             >
               <div className="absolute inset-x-0 top-8 flex justify-center">
                 <span className="h-px w-24 rounded-full bg-thread/20" />

@@ -22,7 +22,7 @@ export function FeatureCard({
     <article
       data-reveal-index={index}
       ref={setRevealRef(index)}
-      className={`rounded-[24px] border border-border bg-canvas-alt/90 p-5 transition-all duration-700 ease-out ${revealClass}`}
+      className={`shape-slab border border-border bg-canvas-alt p-5 transition-all duration-700 ease-out ${revealClass}`}
     >
       <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
         {label}
@@ -52,7 +52,7 @@ export function MockTaskCard({
 }: MockTaskCardProps) {
   return (
     <div
-      className={`rounded-[28px] border ${done ? "border-thread-done/20" : "border-thread/20"} bg-canvas-alt/90 p-6 shadow-card floating-card ${animationClass} ${delayClass}`}
+      className={`shape-slab-alt border ${done ? "border-thread-done/20" : "border-thread/20"} bg-canvas-alt p-6 shadow-card floating-card ${animationClass} ${delayClass}`}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -91,7 +91,7 @@ export function TaskListItem({
 }: TaskListItemProps) {
   return (
     <div
-      className={`task-item flex gap-4 rounded-[28px] border ${done ? "border-thread-done" : "border-border"} bg-canvas-alt/90 p-5 transition hover:bg-white/5`}
+      className={`task-item flex gap-4 shape-slab border ${done ? "border-thread-done" : "border-border"} bg-canvas-alt p-5 transition hover:bg-white/5`}
     >
       <div
         className={`pin relative h-11 w-11 rounded-full border ${done ? "border-thread-done bg-thread-done/10" : "border-thread bg-thread/10"}`}
