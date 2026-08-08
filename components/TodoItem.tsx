@@ -72,11 +72,9 @@ export function TodoItem({
   };
 
   return (
-    <li
-      className={`task-item flex items-start gap-3 py-3 ${todo.completed ? "done" : ""}`}
-    >
+    <li className="group flex items-start gap-3 py-3">
       <div
-        className="node relative flex flex-col items-center w-5 shrink-0 pt-0.5"
+        className="relative flex w-5 flex-col items-center shrink-0 pt-0.5"
         aria-hidden="true"
       >
         <button
@@ -84,21 +82,42 @@ export function TodoItem({
           role="checkbox"
           aria-checked={todo.completed}
           aria-label={todo.completed ? "Mark task active" : "Mark task done"}
-          className="pin relative flex-shrink-0 rounded-full border-2 border-border-strong shadow-sm transition duration-200 hover:border-thread hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
+          className={`relative h-5 w-5 flex-shrink-0 rounded-full border-2 shadow-sm transition duration-200 hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2 ${
+            todo.completed
+              ? "border-thread-done bg-thread-done shadow-[0_0_0_4px_rgba(125,226,209,0.28)]"
+              : "border-border-strong bg-[radial-gradient(circle_at_32%_28%,rgba(255,255,255,0.35),transparent_55%),#2b2c28] hover:border-thread"
+          }`}
           onClick={() => onToggle(todo.id)}
-        />
+        >
+          {todo.completed && (
+            <span className="absolute left-1/2 top-1/2 h-[7px] w-[4px] -translate-x-1/2 -translate-y-1/2 rotate-45 border-b-2 border-r-2 border-canvas" />
+          )}
+        </button>
         {isLast ? (
-          <span className="tail-line" />
+          <span className="relative mt-1 h-4 w-[2px] bg-gradient-to-b from-border-strong to-transparent" />
         ) : (
-          <span className="strand-line animate-[twine-drift_7s_linear_infinite]" />
+          <span
+            className={`mt-1 w-[3px] flex-1 min-h-[22px] ${
+              todo.completed
+                ? "bg-[linear-gradient(135deg,transparent_42%,#7de2d1_42%_58%,transparent_58%),linear-gradient(45deg,transparent_42%,#7de2d1_42%_58%,transparent_58%)] bg-[length:8px_8px] bg-repeat-y bg-center"
+                : "animate-[twine-drift_7s_linear_infinite] bg-[repeating-linear-gradient(115deg,#3f534f_0_2px,transparent_2px_4px)] bg-[length:6px_12px] bg-repeat"
+            }`}
+          />
         )}
       </div>
 
-      <div className="task-content flex-1 min-w-0 px-3 py-1.5">
+      <div
+        className={`flex-1 min-w-0 border-l-2 border-dashed px-3 py-1.5 transition-colors ${
+          todo.completed
+            ? "border-thread-done bg-white/[0.02]"
+            : "border-border-strong group-hover:border-thread group-hover:bg-white/[0.03]"
+        }`}
+        style={{ borderRadius: "0 12px 12px 0" }}
+      >
         {isEditing ? (
           <input
             ref={editRef}
-            className="edit-input w-full rounded-[12px] border border-thread bg-canvas-alt px-3 py-2 text-sm text-text outline-none transition focus:shadow-[0_0_0_3px_rgba(69,201,165,0.4)]"
+            className="w-full rounded-[12px] border border-thread bg-canvas-alt px-3 py-2 text-sm text-text outline-none transition focus:shadow-[0_0_0_3px_rgba(69,201,165,0.4)]"
             value={draft}
             maxLength={120}
             onChange={(e) => setDraft(e.target.value)}
@@ -118,11 +137,11 @@ export function TodoItem({
         )}
       </div>
 
-      <div className="task-actions flex gap-1 transition-opacity duration-200">
+      <div className="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         {!isEditing && (
           <button
             type="button"
-            className="icon-button inline-flex items-center justify-center rounded-[6px] p-1.5 text-text-faint transition duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-thread focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-[6px] p-1.5 text-text-faint transition duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-thread focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
             onClick={() => setIsEditing(true)}
             aria-label="Edit task"
           >
@@ -131,7 +150,7 @@ export function TodoItem({
         )}
         <button
           type="button"
-          className="icon-button inline-flex items-center justify-center rounded-[6px] p-1.5 text-text-faint transition duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-thread-done focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center rounded-[6px] p-1.5 text-text-faint transition duration-200 hover:bg-[rgba(255,255,255,0.06)] hover:text-thread-done focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2"
           onClick={() => onDelete(todo.id)}
           aria-label="Delete task"
         >

@@ -7,6 +7,20 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        canvas: "#131515",
+        "canvas-alt": "#2b2c28",
+        card: "#202522",
+        border: "#35433f",
+        "border-strong": "#3f534f",
+        text: "#fffafb",
+        "text-muted": "#b8d8d1",
+        "text-faint": "#8daea5",
+        thread: "#339989",
+        "thread-hover": "#7de2d1",
+        "thread-done": "#7de2d1",
+        danger: "#ef5350",
+      },
       fontFamily: {
         display: ["Space Grotesk", "sans-serif"],
         body: ["Inter", "sans-serif"],

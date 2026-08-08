@@ -23,7 +23,10 @@ export function EmptyState({ filter }: EmptyStateProps) {
   const { title, body } = COPY[filter];
   return (
     <div className="text-center px-4 py-14 text-text-muted">
-      <div className="empty-knot" aria-hidden="true" />
+      <div
+        className="mx-auto mb-4 h-3.5 w-3.5 rounded-full border-2 border-dashed border-border-strong"
+        aria-hidden="true"
+      />
       <p className="font-display text-xl font-semibold text-text mb-2">
         {title}
       </p>

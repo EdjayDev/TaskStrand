@@ -52,12 +52,12 @@ export function MockTaskCard({
 }: MockTaskCardProps) {
   return (
     <div
-      className={`shape-slab-alt border ${done ? "border-thread-done/20" : "border-thread/20"} bg-canvas-alt p-6 shadow-card floating-card ${animationClass} ${delayClass}`}
+      className={`shape-slab-alt floating-card border ${done ? "border-thread-done/20" : "border-thread/20"} bg-canvas-alt p-6 shadow-card ${animationClass} ${delayClass}`}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div
-            className={`pin relative h-12 w-12 rounded-full border ${done ? "border-thread-done" : "border-thread"} ${done ? "bg-thread-done/10" : "bg-thread/10"}`}
+            className={`relative h-12 w-12 rounded-full border ${done ? "border-thread-done bg-thread-done/10" : "border-thread bg-thread/10"}`}
           />
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
@@ -91,12 +91,15 @@ export function TaskListItem({
 }: TaskListItemProps) {
   return (
     <div
-      className={`task-item flex gap-4 shape-slab border ${done ? "border-thread-done" : "border-border"} bg-canvas-alt p-5 transition hover:bg-white/5`}
+      className={`shape-slab group flex gap-4 border ${done ? "border-thread-done" : "border-border"} bg-canvas-alt p-5 transition hover:bg-white/5`}
     >
       <div
-        className={`pin relative h-11 w-11 rounded-full border ${done ? "border-thread-done bg-thread-done/10" : "border-thread bg-thread/10"}`}
+        className={`relative h-11 w-11 rounded-full border ${done ? "border-thread-done bg-thread-done/10" : "border-thread bg-thread/10"}`}
       />
-      <div className="flex-1 space-y-2 task-content p-3">
+      <div
+        className={`flex-1 space-y-2 border-l-2 border-dashed p-3 transition-colors ${done ? "border-thread-done bg-white/[0.02]" : "border-border-strong group-hover:border-thread group-hover:bg-white/[0.03]"}`}
+        style={{ borderRadius: "0 12px 12px 0" }}
+      >
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-text">{title}</p>
           <span

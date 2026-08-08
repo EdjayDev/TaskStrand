@@ -4,332 +4,102 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-  TaskStrand token system
-  -----------------------
-  The product's whole idea is a single thread running through your tasks,
-  so the palette centers on one "thread" color (a taut red) that turns
-  teal the moment a task is finished — literally the strand lighting up
-  as you work your way down it. Everything else stays quiet on purpose.
-*/
 :root {
   --color-canvas: #131515;
   --color-canvas-alt: #2b2c28;
   --color-card: #202522;
-  --color-card-hover: #2b2c28;
   --color-border: #35433f;
   --color-border-strong: #3f534f;
-
   --color-text: #fffafb;
   --color-text-muted: #b8d8d1;
   --color-text-faint: #8daea5;
-
   --color-thread: #339989;
   --color-thread-hover: #7de2d1;
-  --color-thread-glow: rgba(125, 226, 209, 0.25);
   --color-thread-done: #7de2d1;
-  --color-thread-done-glow: rgba(125, 226, 209, 0.28);
   --color-danger: #ef5350;
-
-  --font-display: "Space Grotesk", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
 
-body {
-  background-color: var(--color-canvas);
-  background-image:
-    radial-gradient(
-      circle at 15% 20%,
-      rgba(51, 153, 137, 0.1),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 85% 80%,
-      rgba(125, 226, 209, 0.08),
-      transparent 40%
-    );
-  color: var(--color-text);
-  font-family: var(--font-body);
-  min-height: 100vh;
-}
+  body {
+    min-height: 100vh;
+    background-color: var(--color-canvas);
+    background-image:
+      radial-gradient(
+        circle at 15% 20%,
+        rgba(51, 153, 137, 0.1),
+        transparent 35%
+      ),
+      radial-gradient(
+        circle at 85% 80%,
+        rgba(125, 226, 209, 0.08),
+        transparent 40%
+      );
+    color: var(--color-text);
+    font-family: "Inter", sans-serif;
+  }
 
-button {
-  font-family: inherit;
+  button,
+  input {
+    font: inherit;
+  }
 }
 
 @layer utilities {
-  .bg-canvas {
-    background-color: var(--color-canvas);
-  }
-  .bg-canvas-alt {
-    background-color: var(--color-canvas-alt);
-  }
-  .bg-card {
-    background-color: var(--color-card);
-  }
-  .border-border {
-    border-color: var(--color-border);
-  }
-  .border-border-strong {
-    border-color: var(--color-border-strong);
-  }
-  .text-text {
-    color: var(--color-text);
-  }
-  .text-text-muted {
-    color: var(--color-text-muted);
-  }
-  .text-text-faint {
-    color: var(--color-text-faint);
-  }
-  .bg-thread {
-    background-color: var(--color-thread);
-  }
-  .bg-thread-hover {
-    background-color: var(--color-thread-hover);
-  }
-  .text-thread {
-    color: var(--color-thread);
-  }
-  .text-thread-done {
-    color: var(--color-thread-done);
-  }
-  .border-thread {
-    border-color: var(--color-thread);
-  }
-  .border-thread-done {
-    border-color: var(--color-thread-done);
-  }
-  .bg-thread-done {
-    background-color: var(--color-thread-done);
-  }
-  .text-danger {
-    color: var(--color-danger);
-  }
-  .text-border-strong {
-    color: var(--color-border-strong);
-  }
-  .shadow-card {
-    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.45);
-  }
   .shape-panel {
     clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
   }
+
   .shape-panel-alt {
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), 16px 100%, 0 100%);
   }
+
   .shape-slab {
     clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
   }
+
   .shape-slab-alt {
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), 10px 100%, 0 100%);
   }
-  .focus-ring-thread:focus-visible {
-    outline: 2px solid var(--color-thread);
-    outline-offset: 2px;
-  }
+
   .floating-card {
     transform: translateZ(0);
     will-change: transform, opacity;
   }
+
   .animate-float {
     animation: float-card 6s ease-in-out infinite alternate;
   }
+
   .animate-float-reverse {
     animation: float-card 6s ease-in-out infinite alternate-reverse;
   }
-  .delay-0 {
-    animation-delay: 0s;
-  }
+
   .delay-1500 {
     animation-delay: 1.5s;
   }
-  .delay-900 {
-    animation-delay: 0.9s;
-  }
-  .preanimate-hidden {
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-  }
-  .preanimate-ready {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    transition:
-      opacity 0.8s ease,
-      transform 0.8s ease;
-  }
-  @keyframes float-card {
-    0% {
-      transform: translateY(0px) translateX(0px);
-    }
-    50% {
-      transform: translateY(-10px) translateX(2px);
-    }
-    100% {
-      transform: translateY(0px) translateX(-2px);
-    }
-  }
 }
 
-@layer components {
-  .pin {
-    background:
-      radial-gradient(
-        circle at 32% 28%,
-        rgba(255, 255, 255, 0.35),
-        transparent 55%
-      ),
-      var(--color-canvas-alt);
+@keyframes float-card {
+  0% {
+    transform: translateY(0px) translateX(0px);
   }
-  .thread-node {
-    content: "";
-    display: block;
-    position: absolute;
-    border-radius: 9999px;
-  }
-
-  .strand-line {
-    width: 3px;
-    flex: 1;
-    min-height: 22px;
-    margin-top: 4px;
-    background-image: repeating-linear-gradient(
-      115deg,
-      var(--color-border-strong) 0 2px,
-      transparent 2px 4px
-    );
-    background-size: 6px 12px;
-    background-repeat: repeat;
-  }
-
-  .tail-line {
-    width: 2px;
-    height: 16px;
-    margin-top: 4px;
-    position: relative;
-    background: linear-gradient(
-      to bottom,
-      var(--color-border-strong),
-      transparent 85%
-    );
-  }
-
-  .tail-line::after {
-    content: "";
-    position: absolute;
-    bottom: -1px;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--color-border-strong);
-    opacity: 0.55;
-    transform: translateX(-50%);
-  }
-
-  .task-content {
-    border-left: 2px dashed var(--color-border-strong);
-    border-radius: 0 12px 12px 0;
-    transition:
-      border-color 0.2s ease,
-      background 0.2s ease;
-  }
-
-  .task-item:hover .task-content {
-    border-left-color: var(--color-thread);
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .task-actions {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
-  .done .pin {
-    background: var(--color-thread-done);
-    border-color: var(--color-thread-done);
-    box-shadow: 0 0 0 4px var(--color-thread-done-glow);
-  }
-
-  .done .pin::before,
-  .done .pin::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 9px;
-    height: 6px;
-    border: 2px solid var(--color-thread-done);
-    border-radius: 50%;
-    border-bottom-color: transparent;
-  }
-
-  .done .pin::before {
-    left: -7px;
-    border-right-color: transparent;
-    transform: translateY(-55%) rotate(-28deg);
-  }
-
-  .done .pin::after {
-    right: -7px;
-    border-left-color: transparent;
-    transform: translateY(-55%) rotate(28deg);
-  }
-
-  .done .strand-line {
-    width: 8px;
-    animation: none;
-    background-image:
-      linear-gradient(
-        135deg,
-        transparent 42%,
-        var(--color-thread-done) 42% 58%,
-        transparent 58%
-      ),
-      linear-gradient(
-        45deg,
-        transparent 42%,
-        var(--color-thread-done) 42% 58%,
-        transparent 58%
-      );
-    background-size: 8px 8px;
-    background-repeat: repeat-y;
-    background-position: center;
-  }
-
-  .done .task-content {
-    border-left-color: var(--color-thread-done);
-  }
-
-  .empty-knot {
-    width: 14px;
-    height: 14px;
-    margin: 0 auto 1rem;
-    border-radius: 9999px;
-    border: 2px dashed var(--color-border-strong);
-  }
-}
-
-@keyframes pulse-soft {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
   50% {
-    opacity: 0.4;
+    transform: translateY(-10px) translateX(2px);
+  }
+  100% {
+    transform: translateY(0px) translateX(-2px);
   }
 }
 
@@ -344,7 +114,6 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .strand-line,
   .animate-float,
   .animate-float-reverse {
     animation: none;
