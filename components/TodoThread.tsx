@@ -1,3 +1,5 @@
+"use client";
+
 import type { Filter, Todo } from "../types";
 import { TodoItem } from "./TodoItem";
 import { EmptyState } from "./EmptyState";
@@ -22,7 +24,7 @@ export function TodoThread({
   }
 
   return (
-    <ul className="flex flex-col list-none m-0 p-0">
+    <ul className="m-0 flex list-none flex-col p-0">
       {todos.map((todo, index) => (
         <TodoItem
           key={todo.id}
