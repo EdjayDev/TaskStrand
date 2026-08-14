@@ -39,10 +39,8 @@ function normalizeSelection(start: GridPoint, end: GridPoint) {
 
 export function TodoItem({
   todo,
-  isLast,
   onToggle,
   onDelete,
-  onEdit,
 }: TodoItemProps) {
   const gridRef = useRef<HTMLDivElement | null>(null);
 
