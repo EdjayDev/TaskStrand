@@ -5,7 +5,7 @@ import { Landing } from "../components/Landing";
 import { AppHeader } from "../components/AppHeader";
 import { TaskInput } from "../components/TaskInput";
 import { FilterTabs } from "../components/FilterTabs";
-import { TodoThread } from "../components/TodoThread";
+import { TodoCanvas } from "../components/TodoCanvas";
 import { useTodos } from "../hooks/useTodos";
 
 export default function Page() {
@@ -20,9 +20,12 @@ export default function Page() {
     completedCount,
     allDone,
     addTodo,
+    createTodo,
     toggleTodo,
     editTodo,
     deleteTodo,
+    moveTodo,
+    resizeTodo,
     clearCompleted,
     toggleAll,
   } = useTodos();
@@ -51,15 +54,15 @@ export default function Page() {
           onClearCompleted={clearCompleted}
         />
 
-        <div className="max-h-[400px] overflow-y-auto pr-1.5">
-          <TodoThread
-            todos={filteredTodos}
-            filter={filter}
-            onToggle={toggleTodo}
-            onDelete={deleteTodo}
-            onEdit={editTodo}
-          />
-        </div>
+        <TodoCanvas
+          todos={filteredTodos}
+          filter={filter}
+          onCreate={createTodo}
+          onToggle={toggleTodo}
+          onDelete={deleteTodo}
+          onMove={moveTodo}
+          onResize={resizeTodo}
+        />
       </div>
     </div>
   );

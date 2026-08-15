@@ -24,7 +24,8 @@ export function FilterTabs({
 }: FilterTabsProps) {
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+  // Changed HTMLButtonElement to HTMLDivElement here
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const currentIndex = FILTERS.findIndex(({ key }) => key === filter);
 
     let nextIndex: number | null = null;

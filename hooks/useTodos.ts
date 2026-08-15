@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Filter, Todo } from "../types";
+import type { Filter, Todo, TodoColor, TodoPosition, TodoSize } from "../types";
 import { loadTodos, saveTodos } from "../lib/storage";
 
 function createId(): string {
@@ -11,6 +11,33 @@ function createId(): string {
   return `todo_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+const DEFAULT_SIZE: TodoSize = { width: 220, height: 130 };
+const COLOR_CYCLE: TodoColor[] = ["green", "blue", "orange", "thread"];
+
+// New cards default in a loose cascade so they don't all land in
+// exactly the same spot on the canvas.
+function defaultPosition(index: number): TodoPosition {
+  const column = index % 5;
+  const row = Math.floor(index / 5);
+  return {
+    x: 24 + column * (DEFAULT_SIZE.width + 24),
+    y: 24 + row * (DEFAULT_SIZE.height + 24),
+  };
+}
+
+// Anything saved before position/size/color/subtasks existed needs
+// to be backfilled, or TodoCard crashes reading todo.position.x on
+// old cached data.
+function migrateTodo(todo: Todo, index: number): Todo {
+  return {
+    ...todo,
+    subtasks: todo.subtasks ?? [],
+    color: todo.color ?? COLOR_CYCLE[index % COLOR_CYCLE.length],
+    position: todo.position ?? defaultPosition(index),
+    size: todo.size ?? DEFAULT_SIZE,
+  };
+}
+
 export function useTodos() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
@@ -18,7 +45,8 @@ export function useTodos() {
 
   // Hydrate from storage once on mount.
   useEffect(() => {
-    setTodos(loadTodos());
+    const loaded = loadTodos();
+    setTodos(loaded.map((todo, index) => migrateTodo(todo, index)));
     setHydrated(true);
   }, []);
 
@@ -35,14 +63,25 @@ export function useTodos() {
       id: createId(),
       text: value,
       completed: false,
-      createdAt: Date.now(),
+      subtasks: [],
+      color: COLOR_CYCLE[todos.length % COLOR_CYCLE.length],
+      position: defaultPosition(todos.length),
+      size: DEFAULT_SIZE,
     };
     setTodos((prev) => [next, ...prev]);
   };
 
+  // Used by the canvas, where the card is created with its own
+  // position/size/color/subtasks already set from the drag gesture.
+  const createTodo = (todo: Todo) => {
+    setTodos((prev) => [todo, ...prev]);
+  };
+
   const toggleTodo = (id: string) => {
     setTodos((prev) =>
-      prev.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)),
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+      ),
     );
   };
 
@@ -56,7 +95,21 @@ export function useTodos() {
       deleteTodo(id);
       return;
     }
-    setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, text: value } : todo)));
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === id ? { ...todo, text: value } : todo)),
+    );
+  };
+
+  const moveTodo = (id: string, position: TodoPosition) => {
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === id ? { ...todo, position } : todo)),
+    );
+  };
+
+  const resizeTodo = (id: string, size: TodoSize) => {
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === id ? { ...todo, size } : todo)),
+    );
   };
 
   const clearCompleted = () => {
@@ -74,7 +127,10 @@ export function useTodos() {
     return todos;
   }, [todos, filter]);
 
-  const remaining = useMemo(() => todos.filter((todo) => !todo.completed).length, [todos]);
+  const remaining = useMemo(
+    () => todos.filter((todo) => !todo.completed).length,
+    [todos],
+  );
   const completedCount = todos.length - remaining;
   const allDone = todos.length > 0 && remaining === 0;
 
@@ -87,9 +143,12 @@ export function useTodos() {
     completedCount,
     allDone,
     addTodo,
+    createTodo,
     toggleTodo,
     editTodo,
     deleteTodo,
+    moveTodo,
+    resizeTodo,
     clearCompleted,
     toggleAll,
   };
