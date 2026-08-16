@@ -12,7 +12,7 @@ function createId(): string {
 }
 
 const DEFAULT_SIZE: TodoSize = { width: 220, height: 130 };
-const COLOR_CYCLE: TodoColor[] = ["green", "blue", "orange", "thread"];
+const COLOR_CYCLE: TodoColor[] = ["dark", "core", "bright", "paper"];
 
 // New cards default in a loose cascade so they don't all land in
 // exactly the same spot on the canvas.
