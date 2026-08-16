@@ -1,4 +1,4 @@
-export type TodoColor = "green" | "blue" | "orange" | "thread";
+export type TodoColor = "dark" | "core" | "bright" | "paper";
 
 export interface TodoPosition {
   x: number;
@@ -19,7 +19,10 @@ export interface Todo {
   // on its card (e.g. ["Find task", "Evaluate task", "Test task"]).
   subtasks: string[];
 
-  // New: which solid color this card renders as.
+  // New: which strand tone this card renders as — dark / core /
+  // bright / paper, the same four tones used for the header's stat
+  // knots. Every card is cut from the same thread material rather
+  // than an arbitrary color.
   color: TodoColor;
 
   // New: free-form placement and size on the shared canvas, in

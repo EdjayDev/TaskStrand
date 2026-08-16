@@ -5,18 +5,33 @@
 @tailwind utilities;
 
 :root {
-  --color-canvas: #131515;
-  --color-canvas-alt: #2b2c28;
+  /* Core material — the "thread" palette, four solid tones + paper */
+  --color-void: #131515; /* darkest — canvas, deep shadow */
+  --color-slate: #2b2c28; /* card chrome, panels, canvas-alt */
+  --color-thread: #339989; /* the strand itself — primary accent */
+  --color-thread-bright: #7de2d1; /* lit strand — hover, active, done */
+  --color-paper: #fffafb; /* index-card white — text, highlights */
+
+  /* Semantic aliases — keep old names working, point at the new material */
+  --color-canvas: var(--color-void);
+  --color-canvas-alt: var(--color-slate);
   --color-card: #202522;
   --color-border: #35433f;
   --color-border-strong: #3f534f;
-  --color-text: #fffafb;
+  --color-text: var(--color-paper);
   --color-text-muted: #b8d8d1;
   --color-text-faint: #8daea5;
-  --color-thread: #339989;
-  --color-thread-hover: #7de2d1;
-  --color-thread-done: #7de2d1;
+  --color-thread-hover: var(--color-thread-bright);
+  --color-thread-done: var(--color-thread-bright);
   --color-danger: #ef5350;
+
+  /* Strand tones — solid, tonal variants of ONE material rather than
+     arbitrary hues, so every task card reads as "cut from the same
+     spool," just wound tighter or looser. */
+  --strand-core: var(--color-thread); /* standard strand */
+  --strand-bright: var(--color-thread-bright); /* taut / highlighted strand */
+  --strand-dark: #1f5f54; /* slack / shadowed strand — solid, darker teal */
+  --strand-paper: var(--color-paper); /* paper tag / label strand */
 }
 
 @layer base {
@@ -35,17 +50,6 @@
   body {
     min-height: 100vh;
     background-color: var(--color-canvas);
-    background-image:
-      radial-gradient(
-        circle at 15% 20%,
-        rgba(51, 153, 137, 0.1),
-        transparent 35%
-      ),
-      radial-gradient(
-        circle at 85% 80%,
-        rgba(125, 226, 209, 0.08),
-        transparent 40%
-      );
     color: var(--color-text);
     font-family: "Inter", sans-serif;
   }

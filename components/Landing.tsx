@@ -19,8 +19,7 @@ export function Landing({ onStart }: LandingProps) {
     const timeout = window.setTimeout(() => setIsReady(true), 120);
     return () => window.clearTimeout(timeout);
   }, []);
-
-  useEffect(() => {
+  -useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

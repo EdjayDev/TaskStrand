@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Filter, Todo, TodoColor, TodoPosition, TodoSize } from "../types";
 import { TodoCard } from "./TodoCard";
 import { EmptyState } from "./EmptyState";
@@ -15,16 +15,41 @@ interface TodoCanvasProps {
   onResize: (id: string, size: TodoSize) => void;
 }
 
-const CANVAS_WIDTH = 2400;
-const CANVAS_HEIGHT = 1400;
-const DEFAULT_SIZE: TodoSize = { width: 220, height: 130 };
-const COLOR_CYCLE: TodoColor[] = ["green", "blue", "orange", "thread"];
+const CANVAS_WIDTH = 3200;
+const CANVAS_HEIGHT = 2000;
+const GRID_SIZE = 40;
+
+// Must match GRID_SIZE / MIN_WIDTH / MIN_HEIGHT in TodoCard.tsx —
+// both files snap to the same 40px grid, and both enforce the same
+// grid-aligned floor (5 cells wide, 3 cells tall).
+const MIN_WIDTH = 200;
+const MIN_HEIGHT = 120;
+
+// Every card cycles through tones of the same thread material,
+// not arbitrary red/green/blue primaries. Keep in sync with
+// TodoColor in types.ts.
+const COLOR_CYCLE: TodoColor[] = ["dark", "core", "bright", "paper"];
 
 interface DraftBox {
   x: number;
   y: number;
   width: number;
   height: number;
+}
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+const snapToGrid = (value: number) => Math.round(value / GRID_SIZE) * GRID_SIZE;
+
+function boxFromPoints(start: Point, end: Point): DraftBox {
+  const x = Math.min(start.x, end.x);
+  const y = Math.min(start.y, end.y);
+  const width = Math.max(Math.abs(end.x - start.x), MIN_WIDTH);
+  const height = Math.max(Math.abs(end.y - start.y), MIN_HEIGHT);
+  return { x, y, width, height };
 }
 
 export function TodoCanvas({
@@ -36,74 +61,92 @@ export function TodoCanvas({
   onMove,
   onResize,
 }: TodoCanvasProps) {
+  // canvasRef: the outer scrollable viewport. Used ONLY for scroll
+  // offset and bounding-rect math — this is the element that scrolls.
   const canvasRef = useRef<HTMLDivElement | null>(null);
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  // contentRef: the full-size inner surface a click on empty grid
+  // space actually lands on. Handlers and the target check both live
+  // here — attaching them to canvasRef and checking against
+  // canvasRef.current was the bug: that check is never true, because
+  // the DOM element under the pointer is this inner div, not the
+  // outer scroll container, so every click was silently ignored.
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const startPoint = useRef<Point | null>(null);
 
+  // "idle": nothing happening. "sizing": start point placed, tracking
+  // the pointer to preview the box until the second click lands the
+  // end point. "naming": box is fixed, title/steps panel is open.
+  const [stage, setStage] = useState<"idle" | "sizing" | "naming">("idle");
   const [draftBox, setDraftBox] = useState<DraftBox | null>(null);
-  const [isNaming, setIsNaming] = useState(false);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftSteps, setDraftSteps] = useState("");
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
+  const pointFromEvent = (event: {
+    clientX: number;
+    clientY: number;
+  }): Point | null => {
+    if (!canvasRef.current) return null;
+    const rect = canvasRef.current.getBoundingClientRect();
+    return {
+      x: snapToGrid(event.clientX - rect.left + canvasRef.current.scrollLeft),
+      y: snapToGrid(event.clientY - rect.top + canvasRef.current.scrollTop),
+    };
+  };
+
   /*
-   * Dragging on empty canvas space (not on a card) marks out where a
-   * new task should be created — the same "create directly on the
-   * surface" gesture as before, just on the shared canvas now.
+   * First click on empty canvas drops the start point and enters
+   * sizing mode. Second click drops the end point, fixes the box,
+   * and opens the naming panel. Clicks on anything other than the
+   * bare grid surface (a card, the naming panel) are ignored because
+   * their target won't be contentRef itself.
    */
-  const handleCanvasPointerDown = (
-    event: React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if (event.target !== canvasRef.current || isNaming) return;
-    if (event.button !== 0) return;
+  const handleCanvasClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target !== contentRef.current) return;
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left + canvasRef.current.scrollLeft;
-    const y = event.clientY - rect.top + canvasRef.current.scrollTop;
+    const point = pointFromEvent(event);
+    if (!point) return;
 
-    dragStart.current = { x, y };
-    setDraftBox({ x, y, width: 0, height: 0 });
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleCanvasPointerMove = (
-    event: React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if (!dragStart.current || !canvasRef.current) return;
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left + canvasRef.current.scrollLeft;
-    const y = event.clientY - rect.top + canvasRef.current.scrollTop;
-
-    setDraftBox({
-      x: Math.min(dragStart.current.x, x),
-      y: Math.min(dragStart.current.y, y),
-      width: Math.abs(x - dragStart.current.x),
-      height: Math.abs(y - dragStart.current.y),
-    });
-  };
-
-  const handleCanvasPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragStart.current) return;
-
-    dragStart.current = null;
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    } catch {
-      // Pointer capture may already be released.
+    if (stage === "idle") {
+      startPoint.current = point;
+      setDraftBox({ x: point.x, y: point.y, width: 0, height: 0 });
+      setStage("sizing");
+      return;
     }
 
-    if (draftBox && draftBox.width > 20 && draftBox.height > 20) {
-      setIsNaming(true);
+    if (stage === "sizing" && startPoint.current) {
+      setDraftBox(boxFromPoints(startPoint.current, point));
+      setStage("naming");
       requestAnimationFrame(() => titleInputRef.current?.focus());
-    } else {
-      setDraftBox(null);
     }
   };
+
+  /*
+   * While sizing, the box follows the pointer live so the person can
+   * see exactly what they're about to place before the second click.
+   */
+  const handleCanvasMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (stage !== "sizing" || !startPoint.current) return;
+    const point = pointFromEvent(event);
+    if (!point) return;
+    setDraftBox(boxFromPoints(startPoint.current, point));
+  };
+
+  // Escape backs out of sizing or naming at any point.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && stage !== "idle") {
+        resetDraft();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [stage]);
 
   const commitDraft = () => {
     const title = draftTitle.trim();
     if (!draftBox || title.length === 0) {
-      cancelDraft();
+      resetDraft();
       return;
     }
 
@@ -119,20 +162,16 @@ export function TodoCanvas({
       subtasks: steps,
       color: COLOR_CYCLE[todos.length % COLOR_CYCLE.length],
       position: { x: draftBox.x, y: draftBox.y },
-      size: {
-        width: Math.max(draftBox.width, DEFAULT_SIZE.width),
-        height: Math.max(draftBox.height, DEFAULT_SIZE.height),
-      },
+      size: { width: draftBox.width, height: draftBox.height },
     });
 
     resetDraft();
   };
 
-  const cancelDraft = () => resetDraft();
-
   const resetDraft = () => {
+    startPoint.current = null;
+    setStage("idle");
     setDraftBox(null);
-    setIsNaming(false);
     setDraftTitle("");
     setDraftSteps("");
   };
@@ -140,31 +179,25 @@ export function TodoCanvas({
   return (
     <div
       ref={canvasRef}
-      className="relative overflow-auto rounded-lg border border-border-strong bg-[#151614]"
+      className="relative h-screen w-full overflow-auto bg-[var(--color-void)]"
       style={{
-        width: "100%",
-        height: "70vh",
-      }}
-      onPointerDown={handleCanvasPointerDown}
-      onPointerMove={handleCanvasPointerMove}
-      onPointerUp={handleCanvasPointerUp}
-      onPointerCancel={() => {
-        dragStart.current = null;
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
+        backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
+        cursor: stage === "sizing" ? "crosshair" : "default",
       }}
     >
       <div
+        ref={contentRef}
         style={{
           width: CANVAS_WIDTH,
           height: CANVAS_HEIGHT,
           position: "relative",
         }}
+        onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMouseMove}
       >
-        {/* Empty state overlays the canvas rather than replacing it —
-            the canvas is now how tasks get created, so the surface
-            has to stay interactive (drag-to-create) even when it's
-            empty. pointer-events-none lets drags pass straight
-            through to the canvas underneath. */}
-        {todos.length === 0 && (
+        {todos.length === 0 && stage === "idle" && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <EmptyState filter={filter} />
           </div>
@@ -181,28 +214,38 @@ export function TodoCanvas({
           />
         ))}
 
-        {/* In-progress drag rectangle, before naming */}
-        {draftBox && !isNaming && (
-          <div
-            className="pointer-events-none absolute border-2 border-dashed border-thread bg-thread"
-            style={{
-              left: draftBox.x,
-              top: draftBox.y,
-              width: draftBox.width,
-              height: draftBox.height,
-            }}
-          />
+        {/* Start point marker + live preview box while sizing */}
+        {draftBox && stage === "sizing" && (
+          <>
+            <div
+              className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--strand-bright)]"
+              style={{
+                left: startPoint.current?.x ?? draftBox.x,
+                top: startPoint.current?.y ?? draftBox.y,
+              }}
+            />
+            <div
+              className="pointer-events-none absolute border-2 border-dashed border-[var(--color-thread)] bg-[var(--color-thread)]/15"
+              style={{
+                left: draftBox.x,
+                top: draftBox.y,
+                width: draftBox.width,
+                height: draftBox.height,
+              }}
+            />
+          </>
         )}
 
-        {/* Naming panel, anchored at the drawn rectangle */}
-        {draftBox && isNaming && (
+        {/* Naming panel, anchored at the finished box */}
+        {draftBox && stage === "naming" && (
           <div
             className="absolute z-10 flex flex-col gap-1 border-2 border-thread bg-thread p-2"
             style={{
               left: draftBox.x,
               top: draftBox.y,
-              width: Math.max(draftBox.width, DEFAULT_SIZE.width),
+              width: Math.max(draftBox.width, MIN_WIDTH),
             }}
+            onClick={(event) => event.stopPropagation()}
           >
             <input
               ref={titleInputRef}
@@ -210,6 +253,10 @@ export function TodoCanvas({
               onChange={(event) => setDraftTitle(event.target.value)}
               placeholder="Task title"
               className="w-full border border-[#151614] bg-[#151614] px-1 py-0.5 text-[11px] text-white outline-none"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commitDraft();
+                if (event.key === "Escape") resetDraft();
+              }}
             />
 
             <textarea
@@ -231,7 +278,7 @@ export function TodoCanvas({
 
               <button
                 type="button"
-                onClick={cancelDraft}
+                onClick={resetDraft}
                 className="rounded border border-[#151614] bg-[#151614] px-1.5 py-0.5 text-[9px] text-white"
               >
                 Cancel
