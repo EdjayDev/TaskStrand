@@ -31,12 +31,36 @@ const MIN_HEIGHT = 120;
 const COLOR_CYCLE: TodoColor[] = ["dark", "core", "bright", "paper"];
 
 // Shared styling for the naming-panel form controls (title input,
-// steps textarea, action buttons) so the three elements stay
-// visually consistent without repeating the same class string.
+// steps textarea) so both fields stay visually consistent without
+// repeating the same class string.
 const PANEL_FIELD_CLASS =
-  "w-full border border-[#151614] bg-[#151614] px-1 py-0.5 text-white outline-none";
-const PANEL_BUTTON_CLASS =
-  "rounded border border-[#151614] bg-[#151614] px-1.5 py-0.5 text-[9px] text-white";
+  "w-full border border-[#151614] bg-[#151614] px-1 py-0.5 text-white outline-none " +
+  "transition-colors focus:border-[var(--strand-bright)]";
+
+// Create is the primary action (filled, bright accent); Cancel is
+// secondary (outline only) — the color difference is the affordance,
+// not just decoration, so a person can tell the two apart at a glance.
+const PANEL_BUTTON_BASE_CLASS =
+  "rounded px-1.5 py-0.5 text-[9px] font-medium transition-all duration-100 " +
+  "active:scale-95";
+const PANEL_BUTTON_PRIMARY_CLASS = `${PANEL_BUTTON_BASE_CLASS} border border-[var(--strand-bright)] bg-[var(--strand-bright)] text-[#151614] hover:brightness-110`;
+const PANEL_BUTTON_SECONDARY_CLASS = `${PANEL_BUTTON_BASE_CLASS} border border-[#151614] bg-transparent text-white/70 hover:border-white/40 hover:text-white`;
+
+// One-time keyframes for the two micro-interactions below: the naming
+// panel popping into place, and the sizing start-point pulsing to
+// confirm the click registered. Scoped by class name, not element, so
+// they're harmless to repeat if the canvas re-mounts.
+const CANVAS_MOTION_STYLES = `
+  @keyframes todocanvas-panel-in {
+    from { opacity: 0; transform: scale(0.96) translateY(2px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes todocanvas-pulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+    70% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
+    100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
+  }
+`;
 
 /** Draft-creation state machine:
  *  - "idle":   nothing happening.
@@ -97,6 +121,11 @@ export function TodoCanvas({
   const [draftSteps, setDraftSteps] = useState("");
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Grid cell the pointer is currently over while idle. Purely visual —
+  // it's what invites a first-time user to click at all, since an empty
+  // grid gives no other signal that it's drawable.
+  const [hoverCell, setHoverCell] = useState<Point | null>(null);
+
   /** Converts a pointer event's viewport coordinates into grid-snapped
    * canvas-content coordinates, accounting for scroll offset. */
   const pointFromEvent = (event: {
@@ -141,13 +170,24 @@ export function TodoCanvas({
   /*
    * While sizing, the box follows the pointer live so the person can
    * see exactly what they're about to place before the second click.
+   * While idle, the same handler tracks hoverCell so the grid can
+   * show a "you can draw here" highlight under the cursor.
    */
   const handleCanvasMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (stage !== "sizing" || !startPoint.current) return;
     const point = pointFromEvent(event);
     if (!point) return;
-    setDraftBox(boxFromPoints(startPoint.current, point));
+
+    if (stage === "sizing" && startPoint.current) {
+      setDraftBox(boxFromPoints(startPoint.current, point));
+      return;
+    }
+
+    if (stage === "idle") {
+      setHoverCell(point);
+    }
   };
+
+  const handleCanvasMouseLeave = () => setHoverCell(null);
 
   // Escape backs out of sizing or naming at any point.
   useEffect(() => {
@@ -196,9 +236,11 @@ export function TodoCanvas({
     setDraftSteps("");
   };
 
+  const isIdle = stage === "idle";
   const isSizing = stage === "sizing";
   const isNaming = stage === "naming";
-  const showEmptyState = todos.length === 0 && stage === "idle";
+  const showEmptyState = todos.length === 0 && isIdle;
+  const showHoverHint = isIdle && hoverCell !== null;
 
   return (
     <div
@@ -211,6 +253,8 @@ export function TodoCanvas({
         cursor: isSizing ? "crosshair" : "default",
       }}
     >
+      <style>{CANVAS_MOTION_STYLES}</style>
+
       <div
         ref={contentRef}
         style={{
@@ -220,7 +264,25 @@ export function TodoCanvas({
         }}
         onClick={handleCanvasClick}
         onMouseMove={handleCanvasMouseMove}
+        onMouseLeave={handleCanvasMouseLeave}
       >
+        {/* Idle hover hint: a soft grid-cell outline + "+" that follows
+            the cursor, so an empty canvas still signals "click here to
+            start a thread" instead of looking inert. */}
+        {showHoverHint && hoverCell && (
+          <div
+            className="pointer-events-none absolute flex items-center justify-center rounded-sm border border-dashed border-white/25 text-white/30 transition-opacity"
+            style={{
+              left: hoverCell.x,
+              top: hoverCell.y,
+              width: GRID_SIZE,
+              height: GRID_SIZE,
+            }}
+          >
+            <span className="text-[13px] leading-none">+</span>
+          </div>
+        )}
+
         {showEmptyState && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <EmptyState filter={filter} />
@@ -247,7 +309,15 @@ export function TodoCanvas({
                 left: startPoint.current?.x ?? draftBox.x,
                 top: startPoint.current?.y ?? draftBox.y,
               }}
-            />
+            >
+              {/* Pulsing ring confirms the first click registered —
+                  otherwise the start point is a static dot easy to miss. */}
+              <div
+                className="absolute left-1/2 top-1/2 h-2.5 w-2.5 rounded-full bg-[var(--strand-bright)]"
+                style={{ animation: "todocanvas-pulse 1.1s ease-out infinite" }}
+              />
+            </div>
+
             <div
               className="pointer-events-none absolute border-2 border-dashed border-[var(--color-thread)] bg-[var(--color-thread)]/15"
               style={{
@@ -257,17 +327,32 @@ export function TodoCanvas({
                 height: draftBox.height,
               }}
             />
+
+            {/* Live dimension readout in grid cells, so the person can
+                aim for a specific size instead of guessing pixels. */}
+            <div
+              className="pointer-events-none absolute rounded bg-[var(--color-thread)] px-1.5 py-0.5 text-[9px] font-medium text-white"
+              style={{
+                left: draftBox.x + draftBox.width + 6,
+                top: draftBox.y + draftBox.height + 6,
+              }}
+            >
+              {Math.round(draftBox.width / GRID_SIZE)} ×{" "}
+              {Math.round(draftBox.height / GRID_SIZE)}
+            </div>
           </>
         )}
 
         {/* Naming panel, anchored at the finished box */}
         {draftBox && isNaming && (
           <div
-            className="absolute z-10 flex flex-col gap-1 border-2 border-thread bg-thread p-2"
+            className="absolute z-10 flex flex-col gap-1 border-2 border-thread bg-thread p-2 shadow-lg"
             style={{
               left: draftBox.x,
               top: draftBox.y,
               width: Math.max(draftBox.width, MIN_WIDTH),
+              transformOrigin: "top left",
+              animation: "todocanvas-panel-in 150ms ease-out",
             }}
             onClick={(event) => event.stopPropagation()}
           >
@@ -291,22 +376,31 @@ export function TodoCanvas({
               className={`${PANEL_FIELD_CLASS} resize-none text-[10px]`}
             />
 
-            <div className="flex items-center gap-1 self-end">
-              <button
-                type="button"
-                onClick={commitDraft}
-                className={PANEL_BUTTON_CLASS}
-              >
-                Create
-              </button>
+            <div className="flex items-center justify-between gap-2">
+              {/* Keyboard hint keeps the shortcuts discoverable without
+                  cluttering the primary action row. */}
+              <span className="text-[8px] uppercase tracking-wide text-white/35">
+                Enter ↵ create · Esc cancel
+              </span>
 
-              <button
-                type="button"
-                onClick={resetDraft}
-                className={PANEL_BUTTON_CLASS}
-              >
-                Cancel
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={resetDraft}
+                  className={PANEL_BUTTON_SECONDARY_CLASS}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={commitDraft}
+                  disabled={draftTitle.trim().length === 0}
+                  className={`${PANEL_BUTTON_PRIMARY_CLASS} disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100`}
+                >
+                  Create
+                </button>
+              </div>
             </div>
           </div>
         )}
