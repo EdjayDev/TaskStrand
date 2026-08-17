@@ -30,6 +30,22 @@ const MIN_HEIGHT = 120;
 // TodoColor in types.ts.
 const COLOR_CYCLE: TodoColor[] = ["dark", "core", "bright", "paper"];
 
+// Shared styling for the naming-panel form controls (title input,
+// steps textarea, action buttons) so the three elements stay
+// visually consistent without repeating the same class string.
+const PANEL_FIELD_CLASS =
+  "w-full border border-[#151614] bg-[#151614] px-1 py-0.5 text-white outline-none";
+const PANEL_BUTTON_CLASS =
+  "rounded border border-[#151614] bg-[#151614] px-1.5 py-0.5 text-[9px] text-white";
+
+/** Draft-creation state machine:
+ *  - "idle":   nothing happening.
+ *  - "sizing": start point placed; the box previews live as the
+ *              pointer moves, until a second click lands the end point.
+ *  - "naming": box is fixed in place; the title/steps panel is open.
+ */
+type DraftStage = "idle" | "sizing" | "naming";
+
 interface DraftBox {
   x: number;
   y: number;
@@ -44,6 +60,8 @@ interface Point {
 
 const snapToGrid = (value: number) => Math.round(value / GRID_SIZE) * GRID_SIZE;
 
+/** Builds a grid-snapped box from two opposite corners, enforcing the
+ * minimum width/height floor so a near-zero drag still yields a usable card. */
 function boxFromPoints(start: Point, end: Point): DraftBox {
   const x = Math.min(start.x, end.x);
   const y = Math.min(start.y, end.y);
@@ -73,15 +91,14 @@ export function TodoCanvas({
   const contentRef = useRef<HTMLDivElement | null>(null);
   const startPoint = useRef<Point | null>(null);
 
-  // "idle": nothing happening. "sizing": start point placed, tracking
-  // the pointer to preview the box until the second click lands the
-  // end point. "naming": box is fixed, title/steps panel is open.
-  const [stage, setStage] = useState<"idle" | "sizing" | "naming">("idle");
+  const [stage, setStage] = useState<DraftStage>("idle");
   const [draftBox, setDraftBox] = useState<DraftBox | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftSteps, setDraftSteps] = useState("");
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
+  /** Converts a pointer event's viewport coordinates into grid-snapped
+   * canvas-content coordinates, accounting for scroll offset. */
   const pointFromEvent = (event: {
     clientX: number;
     clientY: number;
@@ -143,6 +160,8 @@ export function TodoCanvas({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [stage]);
 
+  /** Turns the current draft box + form fields into a real Todo, then
+   * clears the draft. A blank title cancels instead of creating a card. */
   const commitDraft = () => {
     const title = draftTitle.trim();
     if (!draftBox || title.length === 0) {
@@ -168,6 +187,7 @@ export function TodoCanvas({
     resetDraft();
   };
 
+  /** Clears all in-progress draft state and returns to "idle". */
   const resetDraft = () => {
     startPoint.current = null;
     setStage("idle");
@@ -175,6 +195,10 @@ export function TodoCanvas({
     setDraftTitle("");
     setDraftSteps("");
   };
+
+  const isSizing = stage === "sizing";
+  const isNaming = stage === "naming";
+  const showEmptyState = todos.length === 0 && stage === "idle";
 
   return (
     <div
@@ -184,7 +208,7 @@ export function TodoCanvas({
         backgroundImage:
           "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
         backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
-        cursor: stage === "sizing" ? "crosshair" : "default",
+        cursor: isSizing ? "crosshair" : "default",
       }}
     >
       <div
@@ -197,7 +221,7 @@ export function TodoCanvas({
         onClick={handleCanvasClick}
         onMouseMove={handleCanvasMouseMove}
       >
-        {todos.length === 0 && stage === "idle" && (
+        {showEmptyState && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <EmptyState filter={filter} />
           </div>
@@ -215,7 +239,7 @@ export function TodoCanvas({
         ))}
 
         {/* Start point marker + live preview box while sizing */}
-        {draftBox && stage === "sizing" && (
+        {draftBox && isSizing && (
           <>
             <div
               className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--strand-bright)]"
@@ -237,7 +261,7 @@ export function TodoCanvas({
         )}
 
         {/* Naming panel, anchored at the finished box */}
-        {draftBox && stage === "naming" && (
+        {draftBox && isNaming && (
           <div
             className="absolute z-10 flex flex-col gap-1 border-2 border-thread bg-thread p-2"
             style={{
@@ -252,7 +276,7 @@ export function TodoCanvas({
               value={draftTitle}
               onChange={(event) => setDraftTitle(event.target.value)}
               placeholder="Task title"
-              className="w-full border border-[#151614] bg-[#151614] px-1 py-0.5 text-[11px] text-white outline-none"
+              className={`${PANEL_FIELD_CLASS} text-[11px]`}
               onKeyDown={(event) => {
                 if (event.key === "Enter") commitDraft();
                 if (event.key === "Escape") resetDraft();
@@ -262,16 +286,16 @@ export function TodoCanvas({
             <textarea
               value={draftSteps}
               onChange={(event) => setDraftSteps(event.target.value)}
-              placeholder={"One step per line (optional)"}
+              placeholder="One step per line (optional)"
               rows={3}
-              className="w-full resize-none border border-[#151614] bg-[#151614] px-1 py-0.5 text-[10px] text-white outline-none"
+              className={`${PANEL_FIELD_CLASS} resize-none text-[10px]`}
             />
 
             <div className="flex items-center gap-1 self-end">
               <button
                 type="button"
                 onClick={commitDraft}
-                className="rounded border border-[#151614] bg-[#151614] px-1.5 py-0.5 text-[9px] text-white"
+                className={PANEL_BUTTON_CLASS}
               >
                 Create
               </button>
@@ -279,7 +303,7 @@ export function TodoCanvas({
               <button
                 type="button"
                 onClick={resetDraft}
-                className="rounded border border-[#151614] bg-[#151614] px-1.5 py-0.5 text-[9px] text-white"
+                className={PANEL_BUTTON_CLASS}
               >
                 Cancel
               </button>
