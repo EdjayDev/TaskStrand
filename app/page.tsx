@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Landing } from "../components/Landing";
 import { AppHeader } from "../components/AppHeader";
 import { FilterTabs } from "../components/FilterTabs";
 import { TodoCanvas } from "../components/TodoCanvas";
 import { useTodos } from "../hooks/useTodos";
 
 export default function Page() {
-  const [started, setStarted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const {
     todos,
@@ -27,13 +26,9 @@ export default function Page() {
     toggleAll,
   } = useTodos();
 
-  if (!started) {
-    return <Landing onStart={() => setStarted(true)} />;
-  }
-
   return (
-    <div className="relative h-screen w-full overflow-hidden">
-      {/* The canvas IS the viewport now — full-bleed, no wrapper card */}
+    <div className="relative h-screen w-full overflow-hidden bg-background">
+      {/* The canvas IS the viewport — full-bleed layout */}
       <TodoCanvas
         todos={filteredTodos}
         filter={filter}
@@ -44,15 +39,17 @@ export default function Page() {
         onResize={resizeTodo}
       />
 
-      {/* Everything else floats on top as a toolbar, not a container */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center px-6 py-6">
-        <div className="pointer-events-auto w-full max-w-3xl rounded-[20px] border border-border bg-card/90 p-5 shadow-card backdrop-blur">
+      {/* Floating Header Toolbar with smooth transition wrapper */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center px-6 py-6 transition-all duration-300">
+        <div className="pointer-events-auto w-full max-w-3xl rounded-[24px] border border-border/55 bg-card/85 p-5 shadow-2xl backdrop-blur-xl">
           <AppHeader
             total={todos.length}
             remaining={remaining}
             completed={completedCount}
             allDone={allDone}
             onToggleAll={toggleAll}
+            isMenuOpen={isMenuOpen}
+            onToggleMenu={() => setIsMenuOpen(!isMenuOpen)}
           />
 
           <FilterTabs
