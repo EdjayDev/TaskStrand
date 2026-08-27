@@ -7,12 +7,15 @@ interface AppHeaderProps {
 }
 
 /*
- * A short dashed thread with three knots, standing in for the divider
- * that used to be plain "·" characters. Each knot is filled with the
- * same tone used for its adjacent stat, so the header previews the
- * strand-color language before the user ever sees a card.
+ * A dashed thread whose middle knot slides along the strand in
+ * proportion to completion — the divider doubles as a progress
+ * indicator instead of being purely decorative. At 0% the knot sits
+ * at the start (paper), at 100% it reaches the end (bright).
  */
-function StitchDivider() {
+function StitchDivider({ progress }: { progress: number }) {
+  const clamped = Math.min(1, Math.max(0, progress));
+  const knotX = 4 + clamped * (216 - 4);
+
   return (
     <svg
       viewBox="0 0 220 8"
@@ -28,9 +31,24 @@ function StitchDivider() {
         strokeWidth="1.5"
         strokeDasharray="5 5"
       />
+      {/* completed portion drawn solid over the dashed base */}
+      <line
+        x1="4"
+        y1="4"
+        x2={knotX}
+        y2="4"
+        stroke="var(--strand-core)"
+        strokeWidth="1.5"
+        className="transition-[x2] duration-500 ease-out"
+      />
       <circle cx="4" cy="4" r="3" fill="var(--strand-paper)" />
-      <circle cx="110" cy="4" r="3" fill="var(--strand-core)" />
-      <circle cx="216" cy="4" r="3" fill="var(--strand-bright)" />
+      <circle
+        cx={knotX}
+        cy="4"
+        r="3.5"
+        fill="var(--strand-bright)"
+        className="transition-[cx] duration-500 ease-out"
+      />
     </svg>
   );
 }
@@ -65,6 +83,78 @@ export function AppHeader({
   remaining,
   completed,
   allDone,
+  onToggleAll,
+}: AppHeaderProps) {
+  const progress = total > 0 ? completed / total : 0;
+
+  return (
+    <header className="mb-7">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-text-faint m-0 mb-1">
+            Case board
+          </p>
+          <h1 className="font-display text-3xl font-bold tracking-[-0.025em] text-text m-0">
+            TaskStrand
+          </h1>
+        </div>
+        {total > 0 && (
+          <button
+            className={`flex items-center gap-1.5 rounded-[12px] border px-3 py-2 text-xs font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-thread focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
+              allDone
+                ? "border-thread bg-thread/10 text-thread-hover"
+                : "border-border text-text-muted hover:border-thread hover:text-thread-hover"
+            }`}
+            onClick={onToggleAll}
+          >
+            <PinIcon pinned={allDone} />
+            {allDone ? "Unpin all" : "Pin all done"}
+          </button>
+        )}
+      </div>
+
+      <div className="mt-3 mb-2.5">
+        <StitchDivider progress={progress} />
+      </div>
+
+      <p
+        className="font-mono text-xs text-text-muted m-0 flex flex-wrap items-center gap-x-4 gap-y-1.5"
+        aria-live="polite"
+      >
+        <span className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--strand-paper)]"
+            aria-hidden="true"
+          />
+          <strong className="text-text font-medium tabular-nums">
+            {total}
+          </strong>{" "}
+          total
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--strand-core)]"
+            aria-hidden="true"
+          />
+          <strong className="text-text font-medium tabular-nums">
+            {remaining}
+          </strong>{" "}
+          pending
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--strand-bright)]"
+            aria-hidden="true"
+          />
+          <strong className="text-text font-medium tabular-nums">
+            {completed}
+          </strong>{" "}
+          done
+        </span>
+      </p>
+    </header>
+  );
+}  allDone,
   onToggleAll,
 }: AppHeaderProps) {
   return (
