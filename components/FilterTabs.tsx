@@ -1,10 +1,10 @@
 import { useRef } from "react";
 import type { Filter } from "../types";
 
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "active", label: "Active" },
-  { key: "completed", label: "Completed" },
+const FILTERS: { key: Filter; label: string; icon: string }[] = [
+  { key: "all", label: "All", icon: "ti-list" },
+  { key: "active", label: "Active", icon: "ti-circle-dashed" },
+  { key: "completed", label: "Completed", icon: "ti-circle-check" },
 ];
 
 interface FilterTabsProps {
@@ -22,14 +22,15 @@ export function FilterTabs({
   onClearCompleted,
   counts,
 }: FilterTabsProps) {
-  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const tabRefs = useRef<Record<Filter, HTMLButtonElement | null>>({
+    all: null,
+    active: null,
+    completed: null,
+  });
 
-  // Changed HTMLButtonElement to HTMLDivElement here
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const currentIndex = FILTERS.findIndex(({ key }) => key === filter);
-
     let nextIndex: number | null = null;
-
     if (event.key === "ArrowRight") {
       nextIndex = (currentIndex + 1) % FILTERS.length;
     } else if (event.key === "ArrowLeft") {
@@ -39,15 +40,11 @@ export function FilterTabs({
     } else if (event.key === "End") {
       nextIndex = FILTERS.length - 1;
     }
-
     if (nextIndex === null) {
       return;
     }
-
     event.preventDefault();
-
     const nextKey = FILTERS[nextIndex].key;
-
     onChange(nextKey);
     tabRefs.current[nextKey]?.focus();
   };
@@ -60,10 +57,9 @@ export function FilterTabs({
         aria-label="Filter tasks"
         onKeyDown={handleKeyDown}
       >
-        {FILTERS.map(({ key, label }) => {
+        {FILTERS.map(({ key, label, icon }) => {
           const count = counts?.[key];
           const isActive = filter === key;
-
           return (
             <button
               key={key}
@@ -81,6 +77,12 @@ export function FilterTabs({
               }`}
               onClick={() => onChange(key)}
             >
+              <i
+                className={`ti ${icon} text-sm ${
+                  isActive ? "text-thread" : "text-text-faint"
+                }`}
+                aria-hidden="true"
+              />
               {label}
               {typeof count === "number" && (
                 <span
@@ -97,7 +99,6 @@ export function FilterTabs({
           );
         })}
       </div>
-
       <button
         type="button"
         disabled={completedCount === 0}
